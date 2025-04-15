@@ -568,7 +568,7 @@ class virtualAnalogStick {
 
     isPressed(x = 0, y = 0) {
         //let normal = new Vector()
-        if (Math.hypot((x - this.pos.x), (y - this.pos.y)) < this.radius || (Math.hypot((x - this.pos.x), (y - this.pos.y)) > this.radius && this.holding === true)) {
+        if (Math.hypot((x - this.pos.x), (y - this.pos.y)) < this.radius ||  this.touchPos.magnitude() > 0 /*(Math.hypot((x - this.pos.x), (y - this.pos.y)) > this.radius && this.holding === true)*/) {
             //normal.newCoords(x - this.pos.x, y - this.pos.y)
             //this.touchPos.newCoords(normal.scalarMultiply(1 / this.radius).x, normal.scalarMultiply(1 / this.radius).y)
             this.holding = true
@@ -597,10 +597,10 @@ class virtualAnalogStick {
             //this.frontSprite.drawAtPos(this.pos.x + this.touchPos.x * this.radius, this.pos.y + this.touchPos.y * this.radius);
             output.newCoords(this.touchPos.x, this.touchPos.y);
         } else {
-            output.newCoords(this.touchPos.normalize().x, -this.touchPos.normalize().y);
+            output.newCoords(this.touchPos.normalize().x, this.touchPos.normalize().y);
         }
 
-        return output.print()
+        return output
     };
 
     draw() {
@@ -719,6 +719,10 @@ const leftAnalogStick = new virtualAnalogStick(256, 256, 32);
 leftAnalogStick.frontSprite = new Sprite("img/analog_stick_front.png", 16, 16);
 leftAnalogStick.backSprite = new Sprite("img/analog_stick_back.png", 32, 32);
 
+const rightAnalogStick = new virtualAnalogStick(canvasData.width - 256, 256, 32);
+rightAnalogStick.frontSprite = new Sprite("img/analog_stick_front.png", 16, 16);
+rightAnalogStick.backSprite = new Sprite("img/analog_stick_back.png", 32, 32);
+
 
 
 //background.scale.newCoords(canvasData.width / 128, canvasData.height / 128)
@@ -789,7 +793,7 @@ var shoot = weapon.fireRate;
 var reloading = 0;
 var spread = 0;
 var magazines = 0;
-var zombieSpawn = false;
+var zombieSpawn = true;
 const playerFuncs = {
     reload() {
         if (ammo < weapon.capacity && reloading == 0 && magazines > 0) {
@@ -1184,9 +1188,12 @@ canvas.addEventListener("touchstart", (e) => {
     };
 
     if (leftAnalogStick.isPressed(e.targetTouches[0].clientX, e.targetTouches[0].clientY)) {
-        //console.log(leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
-        console.log("Virtual Stick Pressed");
-        leftAnalogStick.getInput()
+        leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY);
+    }
+
+    
+    if (rightAnalogStick.isPressed(e.targetTouches[0].clientX, e.targetTouches[0].clientY)) {
+        rightAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY);
     }
 
     //console.log(Math.hypot(e.targetTouches[0].clientX - leftAnalogStick.pos.x, e.targetTouches[0].clientY - leftAnalogStick.pos.y))
@@ -1198,18 +1205,56 @@ canvas.addEventListener("touchstart", (e) => {
 canvas.addEventListener("touchend", (e) => {
     //mouse.lmb = false
     leftAnalogStick.touchPos.newCoords(0,0)
-    console.log(leftAnalogStick.holding);
+    rightAnalogStick.touchPos.newCoords(0,0)
+
+    player.velocity.newCoords(0,0)
+    mouse.lmb = false
+
+
+
+
 });
 
 canvas.addEventListener("touchmove", (e) => {
     //mouse.pos.newCoords(e.targetTouches[0].clientX - canvasData.bounds.x, e.targetTouches[0].clientX - canvasData.bounds.y)
 
-    if (leftAnalogStick.isPressed(e.targetTouches[0].clientX, e.targetTouches[0].clientY)) {
-        //console.log(leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
-        console.log("Virtual Stick Moving at Pos x: " + leftAnalogStick.touchPos.x * leftAnalogStick.radius + ", Pos y: " + leftAnalogStick.touchPos.y * leftAnalogStick.radius);
-        //console.log(leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
-        leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY)
-    }
+    for (let i = 0; i < e.targetTouches.length; i++) {
+
+            player.velocity.x = leftAnalogStick.getInput(e.targetTouches[i].clientX, e.targetTouches[i].clientY).x * 2 
+
+            player.velocity.y = leftAnalogStick.getInput(e.targetTouches[i].clientX, e.targetTouches[i].clientY).y * 2      
+    
+        
+        if (rightAnalogStick.isPressed(e.targetTouches[i].clientX, e.targetTouches[i].clientY)) {
+            player.direction = rightAnalogStick.getInput(e.targetTouches[i].clientX, e.targetTouches[i].clientY).getAngle() + degToRad(90);
+        }
+
+        
+        if (leftAnalogStick.isPressed(e.targetTouches[i].clientX, e.targetTouches[i].clientY) && !rightAnalogStick.isPressed(e.targetTouches[i].clientX, e.targetTouches[i].clientY)) {
+            player.direction = leftAnalogStick.getInput(e.targetTouches[i].clientX, e.targetTouches[i].clientY).getAngle() + degToRad(90);
+        } 
+
+        if (rightAnalogStick.getInput(e.targetTouches[i].clientX, e.targetTouches[i].clientY).magnitude() > 0.95) {
+            mouse.lmb = true
+        } else {
+            mouse.lmb = false
+        }
+
+
+        
+    };
+        
+    
+
+
+    
+
+    /*
+    if (leftAnalogStick.isPressed(e.targetTouches[0].clientX, e.targetTouches[0].clientY) && !rightAnalogStick.isPressed(e.targetTouches[0].clientX, e.targetTouches[0].clientY)) {
+            player.direction = leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY).getAngle() + degToRad(90);
+        }
+    */
+
 });
 
 
@@ -1256,7 +1301,7 @@ function draw(/*deltaTime*/) {
 
 
     if (playerHealth > 0) {
-        player.direction = slopeAngle(player.pos.x, player.pos.y, mouse.pos.x, mouse.pos.y) + degToRad(90);
+        //player.direction = slopeAngle(player.pos.x, player.pos.y, mouse.pos.x, mouse.pos.y) + degToRad(90);
         player.sprite.angle = player.direction;
     }
 
@@ -1305,14 +1350,10 @@ function draw(/*deltaTime*/) {
     //player.pos.newCoords(mouse.pos.x, mouse.pos.y)
 
     reloadBtn.drawKey();
-    reloadBtn.drawBounds();
 
-    leftAnalogStick.draw()
+    leftAnalogStick.draw();
+    rightAnalogStick.draw();
 
-
-    ctx.beginPath();
-    ctx.rect(leftAnalogStick.pos.x - leftAnalogStick.radius, leftAnalogStick.pos.y - leftAnalogStick.radius, leftAnalogStick.radius, leftAnalogStick.radius);
-    ctx.stroke();
 
 
 };
