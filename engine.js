@@ -563,40 +563,60 @@ class virtualAnalogStick {
         this.frontSprite = new Sprite();
         this.backSprite = new Sprite();
         this.touchPos = new Vector();
+        this.holding = false;
     };
 
     isPressed(x = 0, y = 0) {
-        //let touchPos = new Vector(x, y)
-        let normal = new Vector()
-        if (Math.hypot((x - this.pos.x), (y - this.pos.y)) < this.radius) {
-            //this.touchPos.subtract(this.pos).normalize()
-            normal.newCoords(x - this.pos.x, y - this.pos.y)
-            this.touchPos.newCoords(normal.scalarMultiply(1 / this.radius).x, normal.scalarMultiply(1 / this.radius).y)
+        //let normal = new Vector()
+        if (Math.hypot((x - this.pos.x), (y - this.pos.y)) < this.radius || (Math.hypot((x - this.pos.x), (y - this.pos.y)) > this.radius && this.holding === true)) {
+            //normal.newCoords(x - this.pos.x, y - this.pos.y)
+            //this.touchPos.newCoords(normal.scalarMultiply(1 / this.radius).x, normal.scalarMultiply(1 / this.radius).y)
+            this.holding = true
             return true
         } else {
-            this.touchPos.newCoords(0, 0)
+            //this.touchPos.newCoords(0, 0)
+            this.holding = false
             return false;
         };
     };
 
     getInput(x, y) {
         let normal = new Vector()
-        if (Math.hypot((x - this.pos.x), (y - this.pos.y)) < this.radius) {
+        let output = new Vector()
+        if (Math.hypot((x - this.pos.x), (y - this.pos.y)) < this.radius || (Math.hypot((x - this.pos.x), (y - this.pos.y)) > this.radius && this.holding === true)) {
             //this.touchPos.subtract(this.pos).normalize()
             normal.newCoords(x - this.pos.x, y - this.pos.y)
             this.touchPos.newCoords(normal.scalarMultiply(1 / this.radius).x, normal.scalarMultiply(1 / this.radius).y)
+            this.holding = true
         } else {
             this.touchPos.newCoords(0, 0)
+            this.holding = false
         };
 
-        return this.touchPos.print()
+        if (this.touchPos.magnitude() * this.radius < this.radius) {
+            //this.frontSprite.drawAtPos(this.pos.x + this.touchPos.x * this.radius, this.pos.y + this.touchPos.y * this.radius);
+            output.newCoords(this.touchPos.x, this.touchPos.y);
+        } else {
+            output.newCoords(this.touchPos.normalize().x, -this.touchPos.normalize().y);
+        }
+
+        return output.print()
     };
 
     draw() {
 
 
         this.backSprite.drawAtPos(this.pos.x, this.pos.y);
-        this.frontSprite.drawAtPos(this.pos.x + this.touchPos.x * this.radius, this.pos.y + this.touchPos.y * this.radius);
+
+        if (this.touchPos.magnitude() * this.radius < this.radius) {
+            this.frontSprite.drawAtPos(this.pos.x + this.touchPos.x * this.radius, this.pos.y + this.touchPos.y * this.radius);
+        } else {
+            this.frontSprite.drawAtPos(this.pos.x + this.touchPos.normalize().x * this.radius, this.pos.y + this.touchPos.normalize().y * this.radius);
+        }
+
+        //console.log(this.touchPos.magnitude());
+
+        //this.frontSprite.drawAtPos(this.pos.x + this.touchPos.x * this.radius, this.pos.y + this.touchPos.y * this.radius);
 
         /*
         this.backSprite.drawAtPos(this.pos.x, this.pos.y);
@@ -1164,28 +1184,31 @@ canvas.addEventListener("touchstart", (e) => {
     };
 
     if (leftAnalogStick.isPressed(e.targetTouches[0].clientX, e.targetTouches[0].clientY)) {
-        console.log(leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
+        //console.log(leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
         console.log("Virtual Stick Pressed");
+        leftAnalogStick.getInput()
     }
 
     //console.log(Math.hypot(e.targetTouches[0].clientX - leftAnalogStick.pos.x, e.targetTouches[0].clientY - leftAnalogStick.pos.y))
-    console.log("Distance: " + Math.hypot(e.targetTouches[0].clientX - leftAnalogStick.pos.x, e.targetTouches[0].clientY - leftAnalogStick.pos.y))
-    console.log(e.targetTouches[0].clientX, e.targetTouches[0].clientY)
-    
+    //console.log("Distance: " + Math.hypot(e.targetTouches[0].clientX - leftAnalogStick.pos.x, e.targetTouches[0].clientY - leftAnalogStick.pos.y))
+    //console.log(e.targetTouches[0].clientX, e.targetTouches[0].clientY)
+
 })
 
 canvas.addEventListener("touchend", (e) => {
     //mouse.lmb = false
+    leftAnalogStick.touchPos.newCoords(0,0)
+    console.log(leftAnalogStick.holding);
 });
 
 canvas.addEventListener("touchmove", (e) => {
     //mouse.pos.newCoords(e.targetTouches[0].clientX - canvasData.bounds.x, e.targetTouches[0].clientX - canvasData.bounds.y)
 
     if (leftAnalogStick.isPressed(e.targetTouches[0].clientX, e.targetTouches[0].clientY)) {
-        console.log(leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
-        console.log("Virtual Stick Moving at Pos x: " + leftAnalogStick.touchPos.x * leftAnalogStick.radius + ", Pos y: "+ leftAnalogStick.touchPos.y * leftAnalogStick.radius);
         //console.log(leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
-        
+        console.log("Virtual Stick Moving at Pos x: " + leftAnalogStick.touchPos.x * leftAnalogStick.radius + ", Pos y: " + leftAnalogStick.touchPos.y * leftAnalogStick.radius);
+        //console.log(leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
+        leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY)
     }
 });
 
@@ -1286,11 +1309,11 @@ function draw(/*deltaTime*/) {
 
     leftAnalogStick.draw()
 
-    
+
     ctx.beginPath();
     ctx.rect(leftAnalogStick.pos.x - leftAnalogStick.radius, leftAnalogStick.pos.y - leftAnalogStick.radius, leftAnalogStick.radius, leftAnalogStick.radius);
     ctx.stroke();
-    
+
 
 };
 
