@@ -1182,6 +1182,8 @@ canvas.addEventListener("touchmove", (e) => {
     //mouse.pos.newCoords(e.targetTouches[0].clientX - canvasData.bounds.x, e.targetTouches[0].clientX - canvasData.bounds.y)
 
     if (leftAnalogStick.isPressed(e.targetTouches[0].clientX, e.targetTouches[0].clientY)) {
+        console.log(leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
+        console.log("Virtual Stick Moving at Pos x: " + leftAnalogStick.touchPos.x * leftAnalogStick.radius + ", Pos y: "+ leftAnalogStick.touchPos.y * leftAnalogStick.radius);
         //console.log(leftAnalogStick.getInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
         
     }
