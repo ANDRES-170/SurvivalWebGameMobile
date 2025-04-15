@@ -712,17 +712,32 @@ crosshair.lower.origin.newCoords(32, 32)
 
 const test = new Sprite("img/character.png")
 
-const reloadBtn = new virtualKey(128, 128, 16);
+const reloadBtn = new virtualKey(canvasData.width - 72, canvasData.height / 2 - 64, 16*2);
+reloadBtn.sprite = new Sprite("img/reload_button.png")
 reloadBtn.sprite.origin.newCoords(16, 16)
+reloadBtn.sprite.scale.newCoords(2, 2)
 
-const leftAnalogStick = new virtualAnalogStick(256, 256, 32);
+
+const leftAnalogStick = new virtualAnalogStick(128, canvasData.height - 128, 64);
 leftAnalogStick.frontSprite = new Sprite("img/analog_stick_front.png", 16, 16);
+leftAnalogStick.frontSprite.scale.newCoords(2,2)
 leftAnalogStick.backSprite = new Sprite("img/analog_stick_back.png", 32, 32);
+leftAnalogStick.backSprite.scale.newCoords(3,3)
 
-const rightAnalogStick = new virtualAnalogStick(canvasData.width - 256, 256, 32);
+leftAnalogStick.frontSprite.alpha = 0.5
+leftAnalogStick.backSprite.alpha = 0.5
+
+const rightAnalogStick = new virtualAnalogStick(canvasData.width - 128, canvasData.height - 128, 64);
+
+
 rightAnalogStick.frontSprite = new Sprite("img/analog_stick_front.png", 16, 16);
 rightAnalogStick.backSprite = new Sprite("img/analog_stick_back.png", 32, 32);
+rightAnalogStick.frontSprite.scale.newCoords(2,2)
+rightAnalogStick.backSprite = new Sprite("img/analog_stick_back.png", 32, 32);
+rightAnalogStick.backSprite.scale.newCoords(3,3)
 
+rightAnalogStick.frontSprite.alpha = 0.5
+rightAnalogStick.backSprite.alpha = 0.5
 
 
 //background.scale.newCoords(canvasData.width / 128, canvasData.height / 128)
