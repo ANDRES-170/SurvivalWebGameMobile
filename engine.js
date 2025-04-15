@@ -571,7 +571,7 @@ class virtualAnalogStick {
         if (Math.hypot((x - this.pos.x), (y - this.pos.y)) < this.radius) {
             //this.touchPos.subtract(this.pos).normalize()
             normal.newCoords(x - this.pos.x, y - this.pos.y)
-            this.touchPos.newCoords(normal.normalize().x, normal.normalize().y)
+            this.touchPos.newCoords(normal.scalarMultiply(1 / this.radius).x, normal.scalarMultiply(1 / this.radius).y)
             return true
         } else {
             this.touchPos.newCoords(0, 0)
@@ -584,7 +584,7 @@ class virtualAnalogStick {
         if (Math.hypot((x - this.pos.x), (y - this.pos.y)) < this.radius) {
             //this.touchPos.subtract(this.pos).normalize()
             normal.newCoords(x - this.pos.x, y - this.pos.y)
-            this.touchPos.newCoords(normal.normalize().x, normal.normalize().y)
+            this.touchPos.newCoords(normal.scalarMultiply(1 / this.radius).x, normal.scalarMultiply(1 / this.radius).y)
         } else {
             this.touchPos.newCoords(0, 0)
         };
@@ -596,7 +596,7 @@ class virtualAnalogStick {
 
 
         this.backSprite.drawAtPos(this.pos.x, this.pos.y);
-        this.frontSprite.drawAtPos(this.pos.x + this.touchPos.x * this.radius, this.pos.y+ this.touchPos.y * this.radius);
+        this.frontSprite.drawAtPos(this.pos.x + this.touchPos.x * this.radius, this.pos.y + this.touchPos.y * this.radius);
 
         /*
         this.backSprite.drawAtPos(this.pos.x, this.pos.y);
